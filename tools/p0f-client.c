@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
   if (connect(sock, (struct sockaddr*)&sun, sizeof(sun)))
     PFATAL("Can't connect to API socket.");
 
-  if (write(sock, &q, sizeof(struct p0f_api_query)) !=
+  if (write(sock, &q, sizeof(struct p0f_api_query_v2)) !=
       sizeof(struct p0f_api_query)) FATAL("Short write to API socket.");
 
   if (read(sock, &r, sizeof(struct p0f_api_response)) !=

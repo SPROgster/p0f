@@ -939,7 +939,7 @@ poll_again:
 
           i = read(pfds[cur].fd, 
                    ((char*)&ctable[cur]->in_data) + ctable[cur]->in_off,
-                   sizeof(struct p0f_api_query) - ctable[cur]->in_off);
+                   sizeof(struct p0f_api_query_v2) - ctable[cur]->in_off);
 
           if (i < 0) PFATAL("read() on API socket fails despite POLLIN.");
 
@@ -947,7 +947,8 @@ poll_again:
 
           /* Query in place? Compute response and prepare to send it back. */
 
-          if (ctable[cur]->in_off == sizeof(struct p0f_api_query)) {
+          if (ctable[cur]->in_off == sizeof(struct p0f_api_query) ||
+              ctable[cur]->in_off == sizeof(struct p0f_api_query_v2)) {
 
             handle_query(&ctable[cur]->in_data, &ctable[cur]->out_data);
             pfds[cur].events = (POLLOUT | POLLERR | POLLHUP);

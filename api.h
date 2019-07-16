@@ -16,6 +16,8 @@
 #define P0F_QUERY_MAGIC      0x50304601
 #define P0F_RESP_MAGIC       0x50304602
 
+#define P0F_QUERY_MAGIC_V2   0x50304603
+
 #define P0F_STATUS_BADQUERY  0x00
 #define P0F_STATUS_OK        0x10
 #define P0F_STATUS_NOMATCH   0x20
@@ -35,6 +37,17 @@ struct p0f_api_query {
   u32 magic;                            /* Must be P0F_QUERY_MAGIC            */
   u8  addr_type;                        /* P0F_ADDR_*                         */
   u8  addr[16];                         /* IP address (big endian left align) */
+
+} __attribute__((packed));
+
+struct p0f_api_query_v2 {
+
+  u32 magic;                            /* Must be P0F_QUERY_MAGIC            */
+  u16 src_port;                         /* src TCP/UDP port                   */
+  u16 dst_port;                         /* dst TCP/UDP port                   */
+  u8  addr_type;                        /* P0F_ADDR_*                         */
+  u8  addr_src[16];                     /* IP src address (big endian left align) */
+  u8  addr_dst[16];                     /* IP dst address (big endian left align) */
 
 } __attribute__((packed));
 
