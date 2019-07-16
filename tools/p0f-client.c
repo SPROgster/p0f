@@ -80,13 +80,29 @@ static void parse_addr6(char* str, u8* ret) {
 
 }
 
+static u16 parse_port(const char* arg) {
+
+  long port = atol(arg);
+  if (port == 0) {
+
+    ERRORF("Invalid src port");
+    exit(1);
+
+  }
+
+  return (u16)port;
+
+}
 
 int main(int argc, char** argv) {
 
   u8 tmp[128];
   struct tm* t;
 
-  static struct p0f_api_query q;
+  static union {
+      struct p0f_api_query v1;
+      struct p0f_api_query_v2 v2;
+  } q;
   static struct p0f_api_response r;
 
   static struct sockaddr_un sun;
@@ -94,23 +110,51 @@ int main(int argc, char** argv) {
   s32  sock;
   time_t ut;
 
-  if (argc != 3) {
-    ERRORF("Usage: p0f-client /path/to/socket host_ip\n");
+  u8 v2 = 0;
+
+  if (argc != 3 && argc != 6) {
+    ERRORF("Usage: p0f-client /path/to/socket host_ip [host_port server_ip server port]\n");
     exit(1);
   }
 
-  q.magic = P0F_QUERY_MAGIC;
+  v2 = (argc == 6);
 
-  if (strchr(argv[2], ':')) {
+  if (v2) {
 
-    parse_addr6(argv[2], q.addr);
-    q.addr_type = P0F_ADDR_IPV6;
+    q.v2.magic = P0F_QUERY_MAGIC_V2;
+
+    if (strchr(argv[2], ':')) {
+
+      parse_addr6(argv[2], q.v2.addr_src);
+      parse_addr6(argv[4], q.v2.addr_dst);
+      q.v2.addr_type = P0F_ADDR_IPV6;
+
+    } else {
+
+      parse_addr4(argv[2], q.v2.addr_src);
+      parse_addr4(argv[4], q.v2.addr_dst);
+      q.v2.addr_type = P0F_ADDR_IPV4;
+
+    }
+
+    q.v2.src_port = parse_port(argv[3]);
+    q.v2.dst_port = parse_port(argv[5]);
 
   } else {
 
-    parse_addr4(argv[2], q.addr);
-    q.addr_type = P0F_ADDR_IPV4;
+    q.v1.magic = P0F_QUERY_MAGIC;
 
+    if (strchr(argv[2], ':')) {
+
+      parse_addr6(argv[2], q.v1.addr);
+      q.v1.addr_type = P0F_ADDR_IPV6;
+
+    } else {
+
+      parse_addr4(argv[2], q.v1.addr);
+      q.v1.addr_type = P0F_ADDR_IPV4;
+
+    }
   }
 
   sock = socket(PF_UNIX, SOCK_STREAM, 0);
@@ -128,7 +172,7 @@ int main(int argc, char** argv) {
     PFATAL("Can't connect to API socket.");
 
   if (write(sock, &q, sizeof(struct p0f_api_query_v2)) !=
-      sizeof(struct p0f_api_query)) FATAL("Short write to API socket.");
+      sizeof(struct p0f_api_query_v2)) FATAL("Short write to API socket.");
 
   if (read(sock, &r, sizeof(struct p0f_api_response)) !=
       sizeof(struct p0f_api_response)) FATAL("Short read from API socket.");
