@@ -85,7 +85,9 @@ struct p0f_api_response {
 
 #ifdef _FROM_P0F
 
-void handle_query(struct p0f_api_query* q, struct p0f_api_response* r);
+void handle_query(struct p0f_api_query_v2* q, struct p0f_api_response* r);
+void handle_query_v1(struct p0f_api_query* q, struct p0f_api_response* r);
+void handle_query_v2(struct p0f_api_query_v2* q, struct p0f_api_response* r);
 
 #endif /* _FROM_API */
 
