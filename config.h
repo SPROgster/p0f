@@ -142,7 +142,7 @@
 
 /* Number of hash buckets for active connections: */
 
-#define FLOW_BUCKETS        256
+#define FLOW_BUCKETS        2560
 
 /* Number of hash buckets for host data: */
 
